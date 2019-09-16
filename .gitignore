@@ -1,0 +1,14 @@
+#Ignore everything
+*
+#Un-ignore all extensions
+!*.*
+
+#Un-ignore all directories
+!*/
+
+#Add ignores below....
+
+#Cmake ingores
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
