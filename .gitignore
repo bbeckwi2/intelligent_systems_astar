@@ -8,6 +8,9 @@
 
 #Add ignores below....
 
+#Static library ignores
+*.a
+
 #Cmake ingores
 CMakeFiles
 CMakeCache.txt
