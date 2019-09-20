@@ -11,6 +11,9 @@
 #Static library ignores
 *.a
 
+#VIM ignores
+*.swp
+
 #Cmake ingores
 CMakeFiles
 CMakeCache.txt
