@@ -13,5 +13,7 @@ set(project_sources
   src/Board.cpp
 )
 
+
 add_library(Board src/Board.cpp)
 add_executable(AStar src/main.cpp)
+target_link_libraries(AStar Board)
