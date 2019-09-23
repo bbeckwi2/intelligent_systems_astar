@@ -4,6 +4,7 @@ from functools import total_ordering
 from math import floor
 from copy import deepcopy
 from queue import PriorityQueue
+import argparse
 
 def manhatten_distance(board, goal, xdim):
     total = 0
@@ -95,15 +96,21 @@ class Board:
         return out
 
     def print_path(self):
+        total = 1
         if not self.parent == None:
-            self.parent.print_path()
+            total += self.parent.print_path()
         
         print(self)
         print("g: %d, h: %d, f(x): %d" % (self.g, self.h, self.f))
         print("-----------------------------------")
+        return total
 
     def is_goal(self):
         return self.board == Board.GOAL_BOARD
+
+    @staticmethod
+    def verify(board):
+        return len(board) == Board.X_DIM * Board.Y_DIM
 
     def __str__(self):
         out = "+-----+\n"
@@ -135,19 +142,29 @@ class Board:
 
 class AStar:
 
+    '''
+    Initialize the AStar class
+    start = starting board
+    goal = desired board state
+    heuristic = heuristic function
+    '''
+    MAX_ITERATIONS = 500000
+
     def __init__(self, start, goal, heuristic):
         Board.GOAL_BOARD = goal
         Board.HEUR_FUNC = heuristic
 
         self.frontier = PriorityQueue()
-        self.seen = [start]
+        self.seen = {tuple(start): True}
         self.start = Board(start, None)
-        print(self.start)
 
         self.frontier.put(self.start)
         self.end = self.start
         self.iterations = 0
     
+    '''
+    Runs the a start and attempts to figure out a path
+    '''
     def find_goal(self):
 
         while not self.frontier.empty():
@@ -157,18 +174,78 @@ class AStar:
                 return True
 
             for child in self.end.get_children():
-                if not child.board in self.seen:
-                    self.seen.append(child.board)
+                if not tuple(child.board) in self.seen:
+                    self.seen[tuple(child.board)] = True
                     self.frontier.put(child)
 
             self.iterations += 1
 
+            if self.iterations >= AStar.MAX_ITERATIONS:
+                return False
+
         return False
 
+    '''
+    Prints the path from start to finish along with the number of moves and iterations
+    '''
     def print_path(self):
-        self.end.print_path()
+        total = self.end.print_path()
+        print("Number of moves: %d" % (total))
         print("Iterations needed: %d" % (self.iterations))
 
     def __str__(self):
         pass
 
+    
+
+def main():
+
+    #Parse user input
+    parser = argparse.ArgumentParser(description="Runs the A* algorithm")
+    parser.add_argument('-s', '--start', type=str, help='The tiles for the initial state')
+    parser.add_argument('-g', '--goal', type=str, help='The tiles for the goal state')
+    parser.add_argument('-p', '--position', action='store_true', help='Use position correctness for the heuristic, instead of Manhatten Distance')
+    args = parser.parse_args()
+
+    #Check user input
+    if args.start == None or args.goal == None:
+        desc = '''
+        Runs A* on a given set of boards.
+
+        Boards are input as a string of numbers read from left to right, top to bottom.
+        +-----+
+        |1|2|3|
+        |4|5|6| -> 123456780
+        |7|8|0|
+        +-----+
+        '''
+        print(desc)
+        parser.print_help()
+        return -1
+
+    #Verify the board is eligable
+    if not Board.verify(args.start) or not Board.verify(args.goal):
+        print("A board doesn't contain the right number of elements!")
+        return -1
+
+    #Convert the input to numerical arrays
+    start = [int(c) for c in args.start]
+    goal = [int(c) for c in args.goal]
+    
+    #Run A* using the given heuristic
+    star = None
+    if args.position:
+        star = AStar(start, goal, in_correct_spot)
+    else:
+        star = AStar(start, goal, manhatten_distance)
+
+    #Print the path
+    if star.find_goal():
+        star.print_path()
+        return 0
+
+    print("Path couldn't be found :(")
+    return -1
+
+if __name__ == "__main__":
+    main()
