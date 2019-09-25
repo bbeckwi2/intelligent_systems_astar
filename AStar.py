@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 
+'''
+By: Brandon Beckwith, Diep Nguyen
+'''
+
 from functools import total_ordering
 from math import floor
 from copy import deepcopy
 from queue import PriorityQueue
 import argparse
 
+'''
+Calculates the manhatten distance between tiles on two boards
+'''
 def manhatten_distance(board, goal, xdim):
     total = 0
+
+    # Create two hashes that map the tile number to it's position
     bord = {board[i]: (floor(i % xdim), floor(i/xdim)) for i in range(0, len(board))}
     gord = {goal[i]: (floor(i % xdim), floor(i/xdim)) for i in range(0, len(goal))}
 
+    # Use a lookup to find the manhatten distance between two tiles
     for k,b in bord.items():
         g = gord[k]
 
@@ -18,9 +28,17 @@ def manhatten_distance(board, goal, xdim):
 
     return total
 
+'''
+Returns the number of tiles that aren't in the correct spot
+'''
 def in_correct_spot(board, goal, xdim):
     return sum([1 for i in range(0, len(board)) if board[i] != goal[i]])
 
+'''
+A board class used to store the various board states
+
+Total_ordering is used to implement comparison operations
+'''
 @total_ordering
 class Board:
 
@@ -43,19 +61,31 @@ class Board:
         self.f = self.g + self.h
         pass
 
+    '''
+    Checks to see if the x/y coordinate is valid
+    '''
     def is_bad(self, x, y):
         return x < 0 or x >= Board.X_DIM or y < 0 or y >= Board.Y_DIM
 
+    '''
+    Gets the square level at the x/y
+    '''
     def get(self, x, y):
         if self.is_bad(x,y):
             return -1
 
         return self.board[x + y * Board.X_DIM]
 
+    '''
+    Finds the blank tile's x/y and returns them
+    '''
     def get_blank_index(self):
         tmp = self.board.index(Board.BLANK)
         return (floor(tmp % Board.X_DIM), floor(tmp / Board.X_DIM))
 
+    '''
+    Sets a tile to a new value
+    '''
     def set(self, x, y, val):
         if self.is_bad(x,y):
             return False
@@ -63,6 +93,9 @@ class Board:
         self.board[x + y * Board.X_DIM] = val
         return True
 
+    '''
+    Swaps two tiles based on x/y coordinates
+    '''
     def swap(self, x1, y1, x2, y2):
         if self.is_bad(x1,y1) or self.is_bad(x2, y2):
             return False
@@ -80,6 +113,9 @@ class Board:
         self.f = self.g + self.h
         return True
 
+    '''
+    Get a list of valid child boards
+    '''
     def get_children(self):
         (x,y) = self.get_blank_index()
         out = []
@@ -95,6 +131,9 @@ class Board:
 
         return out
 
+    '''
+    A recursive method used to print the path
+    '''
     def print_path(self):
         total = 1
         if not self.parent == None:
@@ -105,13 +144,22 @@ class Board:
         print("-----------------------------------")
         return total
 
+    '''
+    Goal test, returns true if goal
+    '''
     def is_goal(self):
         return self.board == Board.GOAL_BOARD
 
+    '''
+    A static method used to check to see if the board is valid
+    '''
     @staticmethod
     def verify(board):
         return len(board) == Board.X_DIM * Board.Y_DIM
 
+    '''
+    Essentially too string
+    '''
     def __str__(self):
         out = "+-----+\n"
         for y in range(0, Board.Y_DIM):
@@ -121,9 +169,16 @@ class Board:
         out += "+-----+"
         return out
 
+    '''
+    Allows the object be printed from the interactive terminal
+    '''
     def __repr__(self):
         return self.__str__()
 
+    '''
+    Override the equal-to comparison operator
+    Allows us to use the built in priority queue
+    '''
     def __eq__(self, other):
         try:
             return self.f == other.f
@@ -132,6 +187,10 @@ class Board:
         except:
             raise
 
+    '''
+    Override the less-than comparison operator.
+    Allows us to use the built in priority queue
+    '''
     def __lt__(self, other):
         try:
             return self.f < other.f
@@ -140,6 +199,9 @@ class Board:
         except:
             raise
 
+'''
+A simple A* algorthm wrapped in a class
+'''
 class AStar:
 
     '''
@@ -161,6 +223,7 @@ class AStar:
         self.frontier.put(self.start)
         self.end = self.start
         self.iterations = 0
+        self.expanded = 0
     
     '''
     Runs the a start and attempts to figure out a path
@@ -177,6 +240,7 @@ class AStar:
                 if not tuple(child.board) in self.seen:
                     self.seen[tuple(child.board)] = True
                     self.frontier.put(child)
+                    self.expanded += 1
 
             self.iterations += 1
 
@@ -192,11 +256,11 @@ class AStar:
         total = self.end.print_path()
         print("Number of moves: %d" % (total))
         print("Iterations needed: %d" % (self.iterations))
-
+        print("Nodes Expanded: %d" % (self.expanded))
+    
     def __str__(self):
         pass
 
-    
 
 def main():
 
@@ -243,6 +307,9 @@ def main():
     if star.find_goal():
         star.print_path()
         return 0
+
+    if (star.iterations >= star.MAX_ITERATIONS):
+        print("Max number of iterations exceeded")
 
     print("Path couldn't be found :(")
     return -1
