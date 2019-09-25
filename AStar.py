@@ -223,7 +223,7 @@ class AStar:
         self.frontier.put(self.start)
         self.end = self.start
         self.iterations = 0
-        self.expanded = 0
+        self.generated = 0
     
     '''
     Runs the a start and attempts to figure out a path
@@ -240,7 +240,7 @@ class AStar:
                 if not tuple(child.board) in self.seen:
                     self.seen[tuple(child.board)] = True
                     self.frontier.put(child)
-                    self.expanded += 1
+                    self.generated += 1
 
             self.iterations += 1
 
@@ -256,7 +256,7 @@ class AStar:
         total = self.end.print_path()
         print("Number of moves: %d" % (total))
         print("Iterations needed: %d" % (self.iterations))
-        print("Nodes Expanded: %d" % (self.expanded))
+        print("Nodes Generated: %d" % (self.generated))
     
     def __str__(self):
         pass
