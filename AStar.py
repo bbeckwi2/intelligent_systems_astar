@@ -20,7 +20,7 @@ def manhatten_distance(board, goal, xdim):
     bord = {board[i]: (floor(i % xdim), floor(i/xdim)) for i in range(0, len(board))}
     gord = {goal[i]: (floor(i % xdim), floor(i/xdim)) for i in range(0, len(goal))}
 
-    # Use a lookup to find the manhatten distance between two tiles
+    # Use a lookup to find the manhattan distance between two tiles
     for k,b in bord.items():
         g = gord[k]
 
@@ -209,6 +209,8 @@ class AStar:
     start = starting board
     goal = desired board state
     heuristic = heuristic function
+    interations = number of iterations it took to find goal node
+    generated = the nodes generated
     '''
     MAX_ITERATIONS = 500000
 
@@ -229,7 +231,8 @@ class AStar:
     Runs the a start and attempts to figure out a path
     '''
     def find_goal(self):
-
+        
+        # Loop to generate nodes if the current node is not the goal node
         while not self.frontier.empty():
             self.end = self.frontier.get()
 
@@ -237,6 +240,7 @@ class AStar:
                 return True
 
             for child in self.end.get_children():
+                # Check to make sure that the node is not re-generated. If not then add node to frontier
                 if not tuple(child.board) in self.seen:
                     self.seen[tuple(child.board)] = True
                     self.frontier.put(child)
