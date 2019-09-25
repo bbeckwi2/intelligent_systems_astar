@@ -31,7 +31,7 @@ def manhatten_distance(board, goal, xdim):
 '''
 Returns the number of tiles that aren't in the correct spot
 '''
-def in_correct_spot(board, goal, xdim):
+def missed_tiles(board, goal, xdim):
     return sum([1 for i in range(0, len(board)) if board[i] != goal[i]])
 
 '''
@@ -41,11 +41,18 @@ Total_ordering is used to implement comparison operations
 '''
 @total_ordering
 class Board:
+    
+    # The heuristic function to use
+    HEUR_FUNC = missed_tiles
 
-    HEUR_FUNC = in_correct_spot
+    # The goal state
     GOAL_BOARD = [1,2,3,4,5,6,7,8,0]
+
+    # Board dimensions
     X_DIM = 3
     Y_DIM = 3
+
+    # The blank tile
     BLANK = 0
 
     def __init__(self, board, parent):
@@ -259,7 +266,7 @@ class AStar:
     def print_path(self):
         total = self.end.print_path()
         print("Number of moves: %d" % (total))
-        print("Iterations needed: %d" % (self.iterations))
+        print("Nodes Expanded: %d" % (self.iterations))
         print("Nodes Generated: %d" % (self.generated))
     
     def __str__(self):
@@ -303,7 +310,7 @@ def main():
     #Run A* using the given heuristic
     star = None
     if args.position:
-        star = AStar(start, goal, in_correct_spot)
+        star = AStar(start, goal, missed_tiles)
     else:
         star = AStar(start, goal, manhatten_distance)
 
