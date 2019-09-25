@@ -55,7 +55,7 @@ class Board:
 
         if parent != None:
             self.parent = parent
-            self.g = parent.f
+            self.g = parent.g + 1
 
         self.h = Board.HEUR_FUNC(board, Board.GOAL_BOARD, Board.X_DIM)
         self.f = self.g + self.h
